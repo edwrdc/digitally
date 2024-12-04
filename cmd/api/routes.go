@@ -18,7 +18,13 @@ func (app *application) routes() http.Handler {
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	r.Route("/v1", func(r chi.Router) {
+		// Healthcheck
 		r.Get("/healthz", app.healthcheckHandler)
+
+		// Products
+		r.Route("/products", func(r chi.Router) {
+			r.Post("/", app.createProductHandler)
+		})
 	})
 
 	return r
