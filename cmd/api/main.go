@@ -9,6 +9,8 @@ import (
 	"github.com/edwrdc/digitally/internal/store"
 )
 
+const version = "0.0.1"
+
 func main() {
 
 	cfg := config{
