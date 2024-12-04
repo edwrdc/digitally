@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:17
+    container_name: digitally-db
+    environment:
+      POSTGRES_DB: digitally
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  db-data:
