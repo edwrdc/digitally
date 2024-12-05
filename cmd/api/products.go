@@ -47,7 +47,7 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if err := writeJSON(w, http.StatusCreated, product); err != nil {
+	if err := app.jsonResponse(w, http.StatusCreated, product); err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 }
@@ -64,7 +64,7 @@ func (app *application) getProductHandler(w http.ResponseWriter, r *http.Request
 
 	product.Reviews = reviews
 
-	if err := writeJSON(w, http.StatusOK, product); err != nil {
+	if err := app.jsonResponse(w, http.StatusOK, product); err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
@@ -136,7 +136,7 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if err := writeJSON(w, http.StatusOK, product); err != nil {
+	if err := app.jsonResponse(w, http.StatusOK, product); err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
