@@ -27,6 +27,8 @@ func (app *application) routes() http.Handler {
 
 			r.Route("/{productID}", func(r chi.Router) {
 				r.Get("/", app.getProductHandler)
+
+				r.Delete("/", app.deleteProductHandler)
 			})
 		})
 	})

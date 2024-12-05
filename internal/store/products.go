@@ -81,3 +81,24 @@ func (s *ProductStore) GetByID(ctx context.Context, productID int64) (*Product, 
 
 	return &product, nil
 }
+
+func (s *ProductStore) Delete(ctx context.Context, productID int64) error {
+	query := `
+		DELETE FROM products WHERE id = $1
+	`
+	res, err := s.db.ExecContext(ctx, query, productID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return ErrNotFound
+	}
+
+	return nil
+}

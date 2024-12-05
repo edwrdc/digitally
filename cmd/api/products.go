@@ -62,7 +62,7 @@ func (app *application) getProductHandler(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		switch {
 		case errors.Is(err, store.ErrNotFound):
-			app.notFoundResponse(w, r)
+			app.notFoundResponse(w, r, err)
 		default:
 			app.serverErrorResponse(w, r, err)
 		}
@@ -81,4 +81,28 @@ func (app *application) getProductHandler(w http.ResponseWriter, r *http.Request
 		app.serverErrorResponse(w, r, err)
 		return
 	}
+}
+
+func (app *application) deleteProductHandler(w http.ResponseWriter, r *http.Request) {
+
+	productID := chi.URLParam(r, "productID")
+	id, err := strconv.ParseInt(productID, 10, 64)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	if err := app.store.Products.Delete(ctx, id); err != nil {
+		switch {
+		case errors.Is(err, store.ErrNotFound):
+			app.notFoundResponse(w, r, err)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
