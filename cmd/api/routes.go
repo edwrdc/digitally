@@ -26,9 +26,11 @@ func (app *application) routes() http.Handler {
 			r.Post("/", app.createProductHandler)
 
 			r.Route("/{productID}", func(r chi.Router) {
+				r.Use(app.productContextMiddleware)
 				r.Get("/", app.getProductHandler)
 
 				r.Delete("/", app.deleteProductHandler)
+				r.Patch("/", app.updateProductHandler)
 			})
 		})
 	})

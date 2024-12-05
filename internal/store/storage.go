@@ -15,6 +15,7 @@ type Storage struct {
 		GetByID(context.Context, int64) (*Product, error)
 		Create(context.Context, *Product) error
 		Delete(context.Context, int64) error
+		Update(context.Context, *Product) error
 	}
 	Users interface {
 		Create(context.Context, *User) error

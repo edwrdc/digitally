@@ -102,3 +102,28 @@ func (s *ProductStore) Delete(ctx context.Context, productID int64) error {
 
 	return nil
 }
+
+func (s *ProductStore) Update(ctx context.Context, product *Product) error {
+
+	query := `
+		UPDATE products 
+		SET name = $1, price = $2, description = $3, categories = $4, updated_at = $5 
+		WHERE id = $6
+	`
+
+	_, err := s.db.ExecContext(
+		ctx,
+		query,
+		product.Name,
+		product.Price,
+		product.Description,
+		pq.Array(product.Categories),
+		time.Now().UTC(),
+		product.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
