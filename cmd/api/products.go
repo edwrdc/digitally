@@ -20,7 +20,7 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 
 	var payload CreateProductPayload
 	if err := readJSON(w, r, &payload); err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
+		app.badRequestResponse(w, r, err)
 		return
 	}
 
@@ -35,12 +35,12 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	if err := app.store.Products.Create(ctx, product); err != nil {
-		writeJSONError(w, http.StatusInternalServerError, err.Error())
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 
 	if err := writeJSON(w, http.StatusCreated, product); err != nil {
-		writeJSONError(w, http.StatusInternalServerError, err.Error())
+		app.serverErrorResponse(w, r, err)
 	}
 }
 
@@ -49,7 +49,7 @@ func (app *application) getProductHandler(w http.ResponseWriter, r *http.Request
 	productID := chi.URLParam(r, "productID")
 	id, err := strconv.ParseInt(productID, 10, 64)
 	if err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
+		app.badRequestResponse(w, r, err)
 		return
 	}
 
@@ -59,15 +59,15 @@ func (app *application) getProductHandler(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		switch {
 		case errors.Is(err, store.ErrNotFound):
-			writeJSONError(w, http.StatusNotFound, err.Error())
+			app.notFoundResponse(w, r)
 		default:
-			writeJSONError(w, http.StatusInternalServerError, err.Error())
+			app.serverErrorResponse(w, r, err)
 		}
 		return
 	}
 
 	if err := writeJSON(w, http.StatusOK, product); err != nil {
-		writeJSONError(w, http.StatusInternalServerError, err.Error())
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 }
