@@ -9,7 +9,9 @@ jsonpath "$.env" == "development"
 
 # POST Create Product
 POST http://localhost:6969/v1/products
-Content-Type: application/json
+HTTP 201
+[Asserts]
+header "Content-Type" == application/json
 {
     "name": "Sample Product",
     "price": "99.99",
@@ -20,3 +22,7 @@ Content-Type: application/json
 # GET Product by ID
 GET http://localhost:6969/v1/products/1
 HTTP 200
+
+# GET Product by ID (not found)
+GET http://localhost:6969/v1/products/2
+HTTP 404

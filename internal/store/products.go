@@ -13,7 +13,7 @@ type Product struct {
 	ID          int64    `json:"id"`
 	UserID      int64    `json:"user_id"`
 	Name        string   `json:"name"`
-	Price       string   `json:"price"`
+	Price       float64  `json:"price"`
 	Description string   `json:"description"`
 	Categories  []string `json:"categories"`
 	// TODO: Type - {Service, Item, File}

@@ -10,21 +10,23 @@ import (
 )
 
 type CreateProductPayload struct {
-	Name        string   `json:"name"`
-	Price       string   `json:"price"`
-	Description string   `json:"description"`
-	Categories  []string `json:"categories"`
+	Name        string   `json:"name" validate:"required,max=100"`
+	Price       float64  `json:"price" validate:"required,number,gt=0"`
+	Description string   `json:"description" validate:"required,max=1000"`
+	Categories  []string `json:"categories" validate:"required,min=1,max=5"`
 }
 
 func (app *application) createProductHandler(w http.ResponseWriter, r *http.Request) {
-
 	var payload CreateProductPayload
 	if err := readJSON(w, r, &payload); err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
 
-	ctx := r.Context()
+	if err := Validate.Struct(payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
 
 	product := &store.Product{
 		UserID:      1,
@@ -33,6 +35,7 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 		Description: payload.Description,
 		Categories:  payload.Categories,
 	}
+	ctx := r.Context()
 
 	if err := app.store.Products.Create(ctx, product); err != nil {
 		app.serverErrorResponse(w, r, err)
