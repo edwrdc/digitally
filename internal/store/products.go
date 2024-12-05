@@ -19,6 +19,7 @@ type Product struct {
 	// TODO: Type - {Service, Item, File}
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	Reviews   []Review  `json:"reviews"`
 }
 
 type ProductStore struct {

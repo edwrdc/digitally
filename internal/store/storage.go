@@ -18,11 +18,15 @@ type Storage struct {
 	Users interface {
 		Create(context.Context, *User) error
 	}
+	Reviews interface {
+		GetByProductID(context.Context, int64) ([]Review, error)
+	}
 }
 
 func New(db *sql.DB) *Storage {
 	return &Storage{
 		Products: &ProductStore{db},
 		Users:    &UserStore{db},
+		Reviews:  &ReviewStore{db},
 	}
 }

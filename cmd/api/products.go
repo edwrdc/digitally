@@ -69,6 +69,14 @@ func (app *application) getProductHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	reviews, err := app.store.Reviews.GetByProductID(ctx, id)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	product.Reviews = reviews
+
 	if err := writeJSON(w, http.StatusOK, product); err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
