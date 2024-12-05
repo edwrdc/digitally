@@ -16,3 +16,7 @@ Content-Type: application/json
     "description": "This is a sample product description",
     "categories": ["electronics", "gadgets"]
 }
+
+# GET Product by ID
+GET http://localhost:6969/v1/products/1
+HTTP 200

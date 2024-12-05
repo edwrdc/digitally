@@ -24,6 +24,10 @@ func (app *application) routes() http.Handler {
 		// Products
 		r.Route("/products", func(r chi.Router) {
 			r.Post("/", app.createProductHandler)
+
+			r.Route("/{productID}", func(r chi.Router) {
+				r.Get("/", app.getProductHandler)
+			})
 		})
 	})
 
