@@ -33,6 +33,29 @@ func (app *application) routes() http.Handler {
 				r.Patch("/", app.updateProductHandler)
 			})
 		})
+
+		r.Route("/users", func(r chi.Router) {
+			r.Route("/{userID}", func(r chi.Router) {
+				r.Use(app.userContextMiddleware)
+				r.Get("/", app.getUserHandler)
+				//v1/users/123/wishlist/{productid}
+				// r.Route("/wishlist", func(r chi.Router) {
+				// 	r.Use(app.productContextMiddleware)
+				// 	r.Get("/", app.getWishlistHandler)
+				// 	r.Put("/{productID}", app.addProductToWishlistHandler)
+				// 	r.Delete("/{productID}", app.removeProductFromWishlistHandler)
+				// })
+			})
+		})
+
+		r.Route("/wishlist", func(r chi.Router) {
+			r.Get("/", app.getWishlistHandler)
+			r.Route("/{productID}", func(r chi.Router) {
+				r.Use(app.productContextMiddleware)
+				r.Put("/", app.addProductToWishlistHandler)
+				r.Delete("/", app.removeProductFromWishlistHandler)
+			})
+		})
 	})
 
 	return r

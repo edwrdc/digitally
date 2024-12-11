@@ -26,3 +26,8 @@ func (app *application) editConflictResponse(w http.ResponseWriter, r *http.Requ
 	log.Printf("Edit conflict: %s, path:%s", r.Method, r.URL.Path)
 	writeJSONError(w, http.StatusConflict, "edit conflict")
 }
+
+func (app *application) conflictResponse(w http.ResponseWriter, r *http.Request, err error) {
+	log.Printf("Conflict: %s, path:%s, error: %s", r.Method, r.URL.Path, err)
+	writeJSONError(w, http.StatusConflict, err.Error())
+}
