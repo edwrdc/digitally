@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/lib/pq"
@@ -19,6 +20,7 @@ type Product struct {
 	// TODO: Type - {Service, Item, File}
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	Version   int       `json:"version"`
 	Reviews   []Review  `json:"reviews"`
 }
 
@@ -53,7 +55,7 @@ func (s *ProductStore) Create(ctx context.Context, product *Product) error {
 
 func (s *ProductStore) GetByID(ctx context.Context, productID int64) (*Product, error) {
 	query := `
-		SELECT id, user_id, name, price, description, categories, created_at, updated_at
+		SELECT id, user_id, name, price, description, categories, created_at, updated_at, version
 		FROM products
 		WHERE id = $1
 	`
@@ -68,6 +70,7 @@ func (s *ProductStore) GetByID(ctx context.Context, productID int64) (*Product, 
 		pq.Array(&product.Categories),
 		&product.CreatedAt,
 		&product.UpdatedAt,
+		&product.Version,
 	)
 
 	if err != nil {
@@ -107,11 +110,12 @@ func (s *ProductStore) Update(ctx context.Context, product *Product) error {
 
 	query := `
 		UPDATE products 
-		SET name = $1, price = $2, description = $3, categories = $4, updated_at = $5 
-		WHERE id = $6
+		SET name = $1, price = $2, description = $3, categories = $4, updated_at = $5, version = version + 1
+		WHERE id = $6 AND version = $7
+		RETURNING version
 	`
 
-	_, err := s.db.ExecContext(
+	err := s.db.QueryRowContext(
 		ctx,
 		query,
 		product.Name,
@@ -120,9 +124,18 @@ func (s *ProductStore) Update(ctx context.Context, product *Product) error {
 		pq.Array(product.Categories),
 		time.Now().UTC(),
 		product.ID,
-	)
+		product.Version,
+	).Scan(&product.Version)
 	if err != nil {
-		return err
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrNotFound
+		// TODO: Refactor this to use PG error codes
+		case strings.Contains(err.Error(), "version"):
+			return ErrEditConflict
+		default:
+			return err
+		}
 	}
 
 	return nil

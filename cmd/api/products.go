@@ -132,7 +132,14 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	if err := app.store.Products.Update(r.Context(), product); err != nil {
-		app.serverErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, store.ErrNotFound):
+			app.notFoundResponse(w, r, err)
+		case errors.Is(err, store.ErrEditConflict):
+			app.editConflictResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 		return
 	}
 
