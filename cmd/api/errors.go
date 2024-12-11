@@ -23,5 +23,6 @@ func (app *application) notFoundResponse(w http.ResponseWriter, r *http.Request,
 }
 
 func (app *application) editConflictResponse(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Edit conflict: %s, path:%s", r.Method, r.URL.Path)
 	writeJSONError(w, http.StatusConflict, "edit conflict")
 }

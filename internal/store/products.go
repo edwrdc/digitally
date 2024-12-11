@@ -36,6 +36,9 @@ func (s *ProductStore) Create(ctx context.Context, product *Product) error {
 		RETURNING id, created_at, updated_at
 	`
 
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
 	err := s.db.QueryRowContext(
 		ctx,
 		query,
@@ -60,6 +63,9 @@ func (s *ProductStore) GetByID(ctx context.Context, productID int64) (*Product, 
 		WHERE id = $1
 	`
 	var product Product
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
 
 	err := s.db.QueryRowContext(ctx, query, productID).Scan(
 		&product.ID,
@@ -89,6 +95,10 @@ func (s *ProductStore) Delete(ctx context.Context, productID int64) error {
 	query := `
 		DELETE FROM products WHERE id = $1
 	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
 	res, err := s.db.ExecContext(ctx, query, productID)
 	if err != nil {
 		return err
@@ -114,6 +124,9 @@ func (s *ProductStore) Update(ctx context.Context, product *Product) error {
 		WHERE id = $6 AND version = $7
 		RETURNING version
 	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
 
 	err := s.db.QueryRowContext(
 		ctx,

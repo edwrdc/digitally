@@ -29,6 +29,10 @@ func (s *ReviewStore) GetByProductID(ctx context.Context, productID int64) ([]Re
 		WHERE r.product_id = $1
 		ORDER BY r.created_at DESC;
 	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
 	rows, err := s.DB.QueryContext(ctx, query, productID)
 	if err != nil {
 		return nil, err
