@@ -49,6 +49,7 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 
 	if err := app.jsonResponse(w, http.StatusCreated, product); err != nil {
 		app.serverErrorResponse(w, r, err)
+		return
 	}
 }
 
