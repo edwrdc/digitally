@@ -60,3 +60,26 @@ func (s *ReviewStore) GetByProductID(ctx context.Context, productID int64) ([]Re
 	}
 	return reviews, nil
 }
+
+func (s *ReviewStore) Create(ctx context.Context, review *Review) error {
+	query := `
+		INSERT INTO reviews (user_id, product_id, rating, comment)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, created_at
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	return s.DB.QueryRowContext(
+		ctx,
+		query,
+		review.UserID,
+		review.ProductID,
+		review.Rating,
+		review.Comment,
+	).Scan(
+		&review.ID,
+		&review.CreatedAt,
+	)
+}

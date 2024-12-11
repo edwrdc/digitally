@@ -25,6 +25,7 @@ type Storage struct {
 	}
 	Reviews interface {
 		GetByProductID(context.Context, int64) ([]Review, error)
+		Create(context.Context, *Review) error
 	}
 }
 
