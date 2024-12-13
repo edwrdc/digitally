@@ -20,7 +20,7 @@ type Storage struct {
 		Create(context.Context, *Product) error
 		Delete(context.Context, int64) error
 		Update(context.Context, *Product) error
-		GetUserFeed(context.Context, int64) ([]UserFeedProduct, error)
+		GetUserFeed(context.Context, int64, PaginationFeedQuery) ([]UserFeedProduct, error)
 	}
 	Users interface {
 		Create(context.Context, *User) error

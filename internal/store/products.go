@@ -36,7 +36,7 @@ type ProductStore struct {
 	db *sql.DB
 }
 
-func (s *ProductStore) GetUserFeed(ctx context.Context, userID int64) ([]UserFeedProduct, error) {
+func (s *ProductStore) GetUserFeed(ctx context.Context, userID int64, fq PaginationFeedQuery) ([]UserFeedProduct, error) {
 	query := `
 		SELECT
 			p.id AS product_id,
@@ -55,14 +55,20 @@ func (s *ProductStore) GetUserFeed(ctx context.Context, userID int64) ([]UserFee
 			INNER JOIN users u ON u.id = p.user_id
 			LEFT JOIN reviews r ON r.product_id = p.id
 			LEFT JOIN user_wishlist w ON w.product_id = p.id AND w.user_id = $1
+		WHERE 1 = 1
+			AND ($4::text IS NULL OR (p.name ILIKE '%' || $4 || '%' OR p.description ILIKE '%' || $4 || '%'))
+			AND (p.categories @> $5 or $5 = '{}')
+			AND ($6::timestampz IS NULL OR p.created_at >= $6)
+			AND ($7::timestampz IS NULL OR p.created_at <= $7)
 			GROUP BY p.id, u.username, w.product_id
-			ORDER BY p.created_at DESC
+			ORDER BY p.created_at ` + fq.Sort + `
+			LIMIT $2 OFFSET $3;
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	rows, err := s.db.QueryContext(ctx, query, userID)
+	rows, err := s.db.QueryContext(ctx, query, userID, fq.Limit, fq.Offset, fq.Search, pq.Array(fq.Categories), fq.Since, fq.Until)
 	if err != nil {
 		return nil, err
 	}
