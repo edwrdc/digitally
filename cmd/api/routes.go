@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 func (app *application) routes() http.Handler {
@@ -20,6 +22,9 @@ func (app *application) routes() http.Handler {
 	r.Route("/v1", func(r chi.Router) {
 		// Healthcheck
 		r.Get("/healthz", app.healthcheckHandler)
+
+		docsURL := fmt.Sprintf(":%s/swagger/doc.json", app.config.addr)
+		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(docsURL)))
 
 		// Products
 		r.Route("/products", func(r chi.Router) {
@@ -47,7 +52,6 @@ func (app *application) routes() http.Handler {
 		})
 
 		r.Route("/wishlist", func(r chi.Router) {
-			r.Get("/", app.getWishlistHandler)
 			r.Route("/{productID}", func(r chi.Router) {
 				r.Use(app.productContextMiddleware)
 				r.Put("/", app.addProductToWishlistHandler)

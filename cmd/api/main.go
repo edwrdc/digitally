@@ -11,11 +11,29 @@ import (
 
 const version = "0.0.1"
 
+//	@title			Digitally API
+//	@description	API for Digitally, a platform for buying and selling digital products.
+//	@termsOfService	http://swagger.io/terms/
+
+//	@contact.name	API Support
+//	@contact.url	http://www.swagger.io/support
+//	@contact.email	support@swagger.io
+
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+//	@BasePath					/v1
+//	@securityDefinitions.apikey	ApiKeyAuth
+//	@in							header
+//	@name						Authorization
+//	@description				JWT authorization header
+
 func main() {
 
 	cfg := config{
-		addr: env.Get("API_PORT", ":8080"),
-		env:  env.Get("API_ENV", "development"),
+		addr:   env.Get("API_PORT", ":8080"),
+		env:    env.Get("API_ENV", "development"),
+		apiURL: env.Get("EXTERNAL_API_URL", "localhost:6969"),
 		db: dbConfig{
 			dsn:          env.Get("DB_DSN", "postgres://admin:adminpassword@localhost:5432/digitally?sslmode=disable"),
 			maxOpenConns: env.GetInt("DB_MAX_OPEN_CONNS", 25),

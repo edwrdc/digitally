@@ -21,6 +21,19 @@ type CreateProductPayload struct {
 	Categories  []string `json:"categories" validate:"required,min=1,max=5"`
 }
 
+// CreateProduct godoc
+//
+//	@Summary		Create a new product
+//	@Description	Creates a new product with the provided details
+//	@Tags			products
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		CreateProductPayload	true	"Product details"
+//	@Success		201		{object}	store.Product
+//	@Failure		400		{object}	error
+//	@Failure		500		{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/products [post]
 func (app *application) createProductHandler(w http.ResponseWriter, r *http.Request) {
 	var payload CreateProductPayload
 	if err := readJSON(w, r, &payload); err != nil {
@@ -53,6 +66,20 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 	}
 }
 
+// GetProduct godoc
+//
+//	@Summary		Get product by ID
+//	@Description	Retrieves a product by its ID, including its reviews
+//	@Tags			products
+//	@Accept			json
+//	@Produce		json
+//	@Param			productID	path		int	true	"Product ID"
+//	@Success		200			{object}	store.Product
+//	@Failure		400			{object}	error
+//	@Failure		404			{object}	error
+//	@Failure		500			{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/products/{productID} [get]
 func (app *application) getProductHandler(w http.ResponseWriter, r *http.Request) {
 
 	product := getProductFromContext(r)
@@ -71,6 +98,20 @@ func (app *application) getProductHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// DeleteProduct godoc
+//
+//	@Summary		Delete product
+//	@Description	Deletes a product by its ID
+//	@Tags			products
+//	@Accept			json
+//	@Produce		json
+//	@Param			productID	path		int	true	"Product ID"
+//	@Success		204			{object}	nil
+//	@Failure		400			{object}	error
+//	@Failure		404			{object}	error
+//	@Failure		500			{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/products/{productID} [delete]
 func (app *application) deleteProductHandler(w http.ResponseWriter, r *http.Request) {
 
 	productID := chi.URLParam(r, "productID")
@@ -102,6 +143,22 @@ type UpdateProductPayload struct {
 	Categories  *[]string `json:"categories" validate:"omitempty,min=1,max=5"`
 }
 
+// UpdateProduct godoc
+//
+//	@Summary		Update product
+//	@Description	Updates a product with the provided details
+//	@Tags			products
+//	@Accept			json
+//	@Produce		json
+//	@Param			productID	path		int						true	"Product ID"
+//	@Param			request		body		UpdateProductPayload	true	"Product details to update"
+//	@Success		200			{object}	store.Product
+//	@Failure		400			{object}	error
+//	@Failure		404			{object}	error
+//	@Failure		409			{object}	error	"Edit conflict"
+//	@Failure		500			{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/products/{productID} [patch]
 func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Request) {
 	product := getProductFromContext(r)
 
