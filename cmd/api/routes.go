@@ -23,6 +23,7 @@ func (app *application) routes() http.Handler {
 
 		// Products
 		r.Route("/products", func(r chi.Router) {
+
 			r.Post("/", app.createProductHandler)
 
 			r.Route("/{productID}", func(r chi.Router) {
@@ -38,13 +39,10 @@ func (app *application) routes() http.Handler {
 			r.Route("/{userID}", func(r chi.Router) {
 				r.Use(app.userContextMiddleware)
 				r.Get("/", app.getUserHandler)
-				//v1/users/123/wishlist/{productid}
-				// r.Route("/wishlist", func(r chi.Router) {
-				// 	r.Use(app.productContextMiddleware)
-				// 	r.Get("/", app.getWishlistHandler)
-				// 	r.Put("/{productID}", app.addProductToWishlistHandler)
-				// 	r.Delete("/{productID}", app.removeProductFromWishlistHandler)
-				// })
+			})
+
+			r.Group(func(r chi.Router) {
+				r.Get("/feed", app.getUserFeedHandler)
 			})
 		})
 
