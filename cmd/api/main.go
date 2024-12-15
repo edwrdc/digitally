@@ -1,12 +1,12 @@
 package main
 
 import (
-	"log"
 	"time"
 
 	"github.com/edwrdc/digitally/internal/db"
 	"github.com/edwrdc/digitally/internal/env"
 	"github.com/edwrdc/digitally/internal/store"
+	"go.uber.org/zap"
 )
 
 const version = "0.0.1"
@@ -42,23 +42,29 @@ func main() {
 		},
 	}
 
+	// Logger
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
+	// Database
 	db, err := db.New(cfg.db.dsn, cfg.db.maxOpenConns, cfg.db.maxIdleConns, cfg.db.maxIdleTime)
 	if err != nil {
-		log.Panic(err)
+		logger.Panic(err)
 	}
 	defer db.Close()
 
-	log.Println("Established connection pool to database")
+	logger.Info("Established connection pool to database")
 
 	store := store.New(db)
 
 	app := &application{
 		config: cfg,
 		store:  store,
+		logger: logger,
 	}
 
-	log.Printf("Starting %s server on %s", cfg.env, cfg.addr)
+	app.logger.Infow("Server Started", "env", app.config.env, "addr", app.config.addr)
 
-	log.Fatal(app.run())
+	logger.Fatal(app.run())
 
 }

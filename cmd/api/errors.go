@@ -1,33 +1,31 @@
 package main
 
 import (
-	"log"
 	"net/http"
 )
 
 func (app *application) serverErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	// TODO: Introduce structured logging later
-	log.Printf("Internal server error: %s, path:%s, error: %s", r.Method, r.URL.Path, err)
+	app.logger.Errorw("Internal server error", "method", r.Method, "path", r.URL.Path, "error", err)
 
 	writeJSONError(w, http.StatusInternalServerError, "encountered an error while processing the request")
 }
 
 func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
-	log.Printf("Bad request: %s, path:%s, error: %s", r.Method, r.URL.Path, err)
+	app.logger.Warnw("Bad request", "method", r.Method, "path", r.URL.Path, "error", err)
 	writeJSONError(w, http.StatusBadRequest, err.Error())
 }
 
 func (app *application) notFoundResponse(w http.ResponseWriter, r *http.Request, err error) {
-	log.Printf("Not found: %s, path:%s, error: %s", r.Method, r.URL.Path, err)
+	app.logger.Warnw("Not found", "method", r.Method, "path", r.URL.Path, "error", err)
 	writeJSONError(w, http.StatusNotFound, "not found")
 }
 
 func (app *application) editConflictResponse(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Edit conflict: %s, path:%s", r.Method, r.URL.Path)
+	app.logger.Errorw("Edit conflict", "method", r.Method, "path", r.URL.Path)
 	writeJSONError(w, http.StatusConflict, "edit conflict")
 }
 
 func (app *application) conflictResponse(w http.ResponseWriter, r *http.Request, err error) {
-	log.Printf("Conflict: %s, path:%s, error: %s", r.Method, r.URL.Path, err)
+	app.logger.Errorw("Conflict", "method", r.Method, "path", r.URL.Path, "error", err)
 	writeJSONError(w, http.StatusConflict, err.Error())
 }
