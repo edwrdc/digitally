@@ -29,6 +29,7 @@ type Storage struct {
 		GetByID(context.Context, int64) (*User, error)
 		CreateAndInvite(ctx context.Context, user *User, token string, expiry time.Duration) error
 		Activate(context.Context, string) error
+		Delete(context.Context, int64) error
 	}
 	Reviews interface {
 		GetByProductID(context.Context, int64) ([]Review, error)
