@@ -40,6 +40,9 @@ func main() {
 			maxIdleConns: env.GetInt("DB_MAX_IDLE_CONNS", 25),
 			maxIdleTime:  time.Duration(env.GetInt("DB_MAX_IDLE_TIME", 15)) * time.Minute,
 		},
+		mail: mailConfig{
+			exp: time.Duration(env.GetInt("MAIL_EXPIRY", 3)) * time.Hour,
+		},
 	}
 
 	// Logger

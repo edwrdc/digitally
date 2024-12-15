@@ -20,7 +20,7 @@ func main() {
 	defer conn.Close()
 	store := store.New(conn)
 
-	if err := db.Seed(store); err != nil {
+	if err := db.Seed(store, conn); err != nil {
 		log.Fatalf("error seeding database: %v", err)
 	}
 }

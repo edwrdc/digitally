@@ -12,6 +12,8 @@ var (
 	ErrEditConflict      = errors.New("edit conflict ")
 	ErrConflict          = errors.New("resource already exists")
 	QueryTimeoutDuration = 5 * time.Second
+	ErrDuplicateEmail    = errors.New("duplicate email")
+	ErrDuplicateUsername = errors.New("duplicate username")
 )
 
 type Storage struct {
@@ -23,8 +25,10 @@ type Storage struct {
 		GetUserFeed(context.Context, int64, PaginationFeedQuery) ([]UserFeedProduct, error)
 	}
 	Users interface {
-		Create(context.Context, *User) error
+		Create(context.Context, *sql.Tx, *User) error
 		GetByID(context.Context, int64) (*User, error)
+		CreateAndInvite(ctx context.Context, user *User, token string, expiry time.Duration) error
+		Activate(context.Context, string) error
 	}
 	Reviews interface {
 		GetByProductID(context.Context, int64) ([]Review, error)
@@ -43,4 +47,18 @@ func New(db *sql.DB) *Storage {
 		Reviews:  &ReviewStore{db},
 		Wishlist: &WishlistStore{db},
 	}
+}
+
+func withTx(db *sql.DB, ctx context.Context, fn func(tx *sql.Tx) error) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	if err := fn(tx); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	return tx.Commit()
 }
