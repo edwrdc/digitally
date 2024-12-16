@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -55,20 +56,66 @@ func (s *ProductStore) GetUserFeed(ctx context.Context, userID int64, fq Paginat
 			INNER JOIN users u ON u.id = p.user_id
 			LEFT JOIN reviews r ON r.product_id = p.id
 			LEFT JOIN user_wishlist w ON w.product_id = p.id AND w.user_id = $1
-		WHERE 1 = 1
-			AND ($4::text IS NULL OR (p.name ILIKE '%' || $4 || '%' OR p.description ILIKE '%' || $4 || '%'))
-			AND (p.categories @> $5 or $5 = '{}')
-			AND ($6::timestampz IS NULL OR p.created_at >= $6)
-			AND ($7::timestampz IS NULL OR p.created_at <= $7)
-			GROUP BY p.id, u.username, w.product_id
-			ORDER BY p.created_at ` + fq.Sort + `
-			LIMIT $2 OFFSET $3;
+		WHERE 1=1
 	`
+	params := []interface{}{userID}
+	paramCount := 1
+
+	// Search Condition
+	if fq.Search != "" {
+		paramCount++
+		query += fmt.Sprintf(" AND (p.name ILIKE '%%' || $%d || '%%' OR p.description ILIKE '%%' || $%d || '%%')", paramCount, paramCount)
+		params = append(params, fq.Search)
+	}
+
+	// Categories Condition
+	if len(fq.Categories) > 0 {
+		paramCount++
+		query += fmt.Sprintf(" AND p.categories && $%d", paramCount)
+		params = append(params, pq.Array(fq.Categories))
+	}
+
+	// Date Range Condition
+	if fq.Since != nil {
+		paramCount++
+		query += fmt.Sprintf(" AND p.created_at >= $%d", paramCount)
+		params = append(params, fq.Since)
+	}
+
+	if fq.Until != nil {
+		paramCount++
+		query += fmt.Sprintf(" AND p.created_at <= $%d", paramCount)
+		params = append(params, fq.Until)
+	}
+
+	// GROUP BY Clause
+	query += `
+		GROUP BY 
+			p.id,
+			p.user_id,
+			u.username,
+			p.name,
+			p.price,
+			p.description,
+			p.categories,
+			p.version,
+			p.created_at,
+			w.product_id
+	`
+
+	// ORDER BY and LIMIT
+	paramCount++
+	query += fmt.Sprintf(" ORDER BY p.created_at %s LIMIT $%d", fq.Sort, paramCount)
+	params = append(params, fq.Limit)
+
+	paramCount++
+	query += fmt.Sprintf(" OFFSET $%d", paramCount)
+	params = append(params, fq.Offset)
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	rows, err := s.db.QueryContext(ctx, query, userID, fq.Limit, fq.Offset, fq.Search, pq.Array(fq.Categories), fq.Since, fq.Until)
+	rows, err := s.db.QueryContext(ctx, query, params...)
 	if err != nil {
 		return nil, err
 	}
@@ -108,10 +155,10 @@ func (s *ProductStore) GetUserFeed(ctx context.Context, userID int64, fq Paginat
 func (s *ProductStore) Create(ctx context.Context, product *Product) error {
 
 	query := `
-		INSERT INTO products (user_id, name, price, description, categories)
-		VALUES ($1, $2, $3, $4, $5)
-		RETURNING id, created_at, updated_at
-	`
+			INSERT INTO products (user_id, name, price, description, categories)
+			VALUES ($1, $2, $3, $4, $5)
+			RETURNING id, created_at, updated_at
+		`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
