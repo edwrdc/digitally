@@ -22,6 +22,19 @@ definitions:
     - name
     - price
     type: object
+  main.CreateUserTokenPayload:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 72
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    type: object
   main.RegisterUserPayload:
     properties:
       email:
@@ -207,6 +220,37 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Digitally API
 paths:
+  /authentication/token:
+    post:
+      consumes:
+      - application/json
+      description: Create a token for a user
+      parameters:
+      - description: User credientials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateUserTokenPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Token
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Creates a token
+      tags:
+      - authentication
   /authentication/user:
     post:
       consumes:

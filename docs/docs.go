@@ -24,6 +24,52 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/authentication/token": {
+            "post": {
+                "description": "Create a token for a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "Creates a token",
+                "parameters": [
+                    {
+                        "description": "User credientials",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.CreateUserTokenPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Token",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/authentication/user": {
             "post": {
                 "description": "Registers a user with the given username, email, and password",
@@ -610,6 +656,24 @@ const docTemplate = `{
                 },
                 "price": {
                     "type": "number"
+                }
+            }
+        },
+        "main.CreateUserTokenPayload": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 72,
+                    "minLength": 3
                 }
             }
         },

@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/edwrdc/digitally/internal/auth"
 	"github.com/edwrdc/digitally/internal/db"
 	"github.com/edwrdc/digitally/internal/env"
 	"github.com/edwrdc/digitally/internal/mailer"
@@ -55,6 +56,11 @@ func main() {
 				user: env.Get("BASIC_AUTH_USER", "admin"),
 				pass: env.Get("BASIC_AUTH_PASS", "adminpassword"),
 			},
+			token: tokenAuthConfig{
+				secret: env.Get("AUTH_JWT_SECRET", "digitallyio"),
+				expiry: time.Duration(env.GetInt("AUTH_JWT_EXPIRY", 3)) * time.Hour * 24,
+				iss:    "digitally",
+			},
 		},
 	}
 
@@ -79,11 +85,18 @@ func main() {
 		cfg.mail.mailtrap.inboxID,
 	)
 
+	jwtAuthenticator := auth.NewJWTAuthenticator(
+		cfg.auth.token.secret,
+		cfg.auth.token.iss,
+		cfg.auth.token.iss,
+	)
+
 	app := &application{
-		config: cfg,
-		store:  store,
-		logger: logger,
-		mailer: mailer,
+		config:        cfg,
+		store:         store,
+		logger:        logger,
+		mailer:        mailer,
+		authenticator: jwtAuthenticator,
 	}
 
 	app.logger.Infow("Server Started", "env", app.config.env, "addr", app.config.addr)
