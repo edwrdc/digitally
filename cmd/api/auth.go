@@ -98,7 +98,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		ActivationCode: plainToken,
 	}
 
-	err = app.mailer.Send(mailer.ActivationURLTemplate, user.Username, user.Email, vars, !isProdEnv)
+	statusCode, err := app.mailer.Send(mailer.ActivationURLTemplate, user.Username, user.Email, vars, !isProdEnv)
 	if err != nil {
 		app.logger.Errorw("Failed to send activation email", "error", err)
 
@@ -110,6 +110,8 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		app.serverErrorResponse(w, r, err)
 		return
 	}
+
+	app.logger.Infow("Activation email sent", "status code", statusCode)
 
 	if err := app.jsonResponse(w, http.StatusCreated, userWithToken); err != nil {
 		app.serverErrorResponse(w, r, err)

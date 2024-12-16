@@ -41,23 +41,23 @@ func NewMailtrapMailer(apiKey, fromEmail, inboxID string) *MailtrapMailer {
 	}
 }
 
-func (m *MailtrapMailer) Send(templateFile, username, email string, data any, isSandbox bool) error {
+func (m *MailtrapMailer) Send(templateFile, username, email string, data any, isSandbox bool) (int, error) {
 	// Parse template
 	tmpl, err := template.ParseFS(FS, "templates/"+templateFile)
 	if err != nil {
-		return err
+		return -1, err
 	}
 
 	subject := new(bytes.Buffer)
 	err = tmpl.ExecuteTemplate(subject, "subject", data)
 	if err != nil {
-		return err
+		return -1, err
 	}
 
 	body := new(bytes.Buffer)
 	err = tmpl.ExecuteTemplate(body, "body", data)
 	if err != nil {
-		return err
+		return -1, err
 	}
 
 	payload := mailtrapRequest{
@@ -77,33 +77,36 @@ func (m *MailtrapMailer) Send(templateFile, username, email string, data any, is
 
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("failed to marshal request: %v", err)
+		return -1, fmt.Errorf("failed to marshal request: %v", err)
 	}
 
 	url := fmt.Sprintf("https://sandbox.api.mailtrap.io/api/send/%s", m.inboxID)
-	fmt.Println(url)
 
+	var retryErr error
 	for i := 0; i < maxRetries; i++ {
 		req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonPayload))
 		if err != nil {
 			if i == maxRetries-1 {
-				return fmt.Errorf("failed to create request: %v", err)
+				return -1, fmt.Errorf("failed to create request: %v", err)
 			}
+
+			// exponential backoff
 			time.Sleep(time.Duration(i+1) * time.Second)
 			continue
 		}
 
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", m.apiKey))
 		req.Header.Set("Content-Type", "application/json")
-		fmt.Println(req.Header)
+
 		// req.Header.Set("Api-Token", m.apiKey)
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
 			if i == maxRetries-1 {
-				return fmt.Errorf("failed to send request: %v", err)
+				return -1, fmt.Errorf("failed to send request: %v", err)
 			}
+
 			time.Sleep(time.Duration(i+1) * time.Second)
 			continue
 		}
@@ -112,15 +115,15 @@ func (m *MailtrapMailer) Send(templateFile, username, email string, data any, is
 		body, _ := io.ReadAll(resp.Body)
 
 		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-			return nil
+			return resp.StatusCode, nil
 		}
 
 		if i == maxRetries-1 {
-			return fmt.Errorf("failed to send email, status: %d, body: %s", resp.StatusCode, string(body))
+			return -1, fmt.Errorf("failed to send email, status: %d, body: %s", resp.StatusCode, string(body))
 		}
 
 		time.Sleep(time.Duration(i+1) * time.Second)
 	}
 
-	return fmt.Errorf("failed to send email after %d retries", maxRetries)
+	return -1, fmt.Errorf("failed to send email after %d retries: %v", maxRetries, retryErr)
 }
