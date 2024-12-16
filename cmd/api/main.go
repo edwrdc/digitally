@@ -50,6 +50,12 @@ func main() {
 				inboxID: env.Get("MAILTRAP_INBOX_ID", ""),
 			},
 		},
+		auth: authConfig{
+			basic: basicAuthConfig{
+				user: env.Get("BASIC_AUTH_USER", "admin"),
+				pass: env.Get("BASIC_AUTH_PASS", "adminpassword"),
+			},
+		},
 	}
 
 	// Logger

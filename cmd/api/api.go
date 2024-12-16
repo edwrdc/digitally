@@ -25,6 +25,7 @@ type config struct {
 	apiURL      string
 	frontendURL string
 	mail        mailConfig
+	auth        authConfig
 }
 
 type dbConfig struct {
@@ -39,6 +40,15 @@ type mailConfig struct {
 	mailtrap  mailtrapConfig
 	exp       time.Duration
 	fromEmail string
+}
+
+type authConfig struct {
+	basic basicAuthConfig
+}
+
+type basicAuthConfig struct {
+	user string
+	pass string
 }
 
 // type sendGridConfig struct {

@@ -21,7 +21,7 @@ func (app *application) routes() http.Handler {
 
 	r.Route("/v1", func(r chi.Router) {
 		// Healthcheck
-		r.Get("/healthz", app.healthcheckHandler)
+		r.With(app.BasicAuthMiddleware()).Get("/healthz", app.healthcheckHandler)
 
 		docsURL := fmt.Sprintf(":%s/swagger/doc.json", app.config.addr)
 		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(docsURL)))
