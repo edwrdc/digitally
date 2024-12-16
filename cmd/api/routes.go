@@ -28,6 +28,7 @@ func (app *application) routes() http.Handler {
 
 		// Products
 		r.Route("/products", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
 
 			r.Post("/", app.createProductHandler)
 
@@ -45,17 +46,19 @@ func (app *application) routes() http.Handler {
 			r.Put("/activate/{token}", app.activateUserHandler)
 
 			r.Route("/{userID}", func(r chi.Router) {
-				r.Use(app.userContextMiddleware)
+				r.Use(app.AuthTokenMiddleware)
 				r.Get("/", app.getUserHandler)
 			})
 
 			r.Group(func(r chi.Router) {
+				r.Use(app.AuthTokenMiddleware)
 				r.Get("/feed", app.getUserFeedHandler)
 			})
 		})
 
 		r.Route("/wishlist", func(r chi.Router) {
 			r.Route("/{productID}", func(r chi.Router) {
+				r.Use(app.AuthTokenMiddleware)
 				r.Use(app.productContextMiddleware)
 				r.Put("/", app.addProductToWishlistHandler)
 				r.Delete("/", app.removeProductFromWishlistHandler)

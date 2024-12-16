@@ -46,8 +46,10 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	user := getUserFromContext(r)
+
 	product := &store.Product{
-		UserID:      1,
+		UserID:      user.ID,
 		Name:        payload.Name,
 		Price:       payload.Price,
 		Description: payload.Description,
