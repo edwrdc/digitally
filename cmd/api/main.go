@@ -8,6 +8,8 @@ import (
 	"github.com/edwrdc/digitally/internal/env"
 	"github.com/edwrdc/digitally/internal/mailer"
 	"github.com/edwrdc/digitally/internal/store"
+	"github.com/edwrdc/digitally/internal/store/cache"
+	"github.com/go-redis/redis/v8"
 	"go.uber.org/zap"
 )
 
@@ -43,6 +45,12 @@ func main() {
 			maxIdleConns: env.GetInt("DB_MAX_IDLE_CONNS", 25),
 			maxIdleTime:  time.Duration(env.GetInt("DB_MAX_IDLE_TIME", 15)) * time.Minute,
 		},
+		redisCfg: redisConfig{
+			addr:    env.Get("REDIS_ADDR", "localhost:6379"),
+			pw:      env.Get("REDIS_PW", ""),
+			db:      env.GetInt("REDIS_DB", 0),
+			enabled: env.GetBool("REDIS_ENABLED", false),
+		},
 		mail: mailConfig{
 			fromEmail: env.Get("MAIL_FROM_EMAIL", ""),
 			exp:       time.Duration(env.GetInt("MAIL_EXPIRY", 3)) * time.Hour,
@@ -77,7 +85,15 @@ func main() {
 
 	logger.Info("Established connection pool to database")
 
+	// Redis
+	var redisDB *redis.Client
+	if cfg.redisCfg.enabled {
+		redisDB = cache.NewRedisClient(cfg.redisCfg.addr, cfg.redisCfg.pw, cfg.redisCfg.db)
+		logger.Infow("Redis cache connected")
+	}
+
 	store := store.New(db)
+	cacheStorage := cache.NewRedisStorage(redisDB)
 
 	mailer := mailer.NewMailtrapMailer(
 		cfg.mail.mailtrap.apiKey,
@@ -94,6 +110,7 @@ func main() {
 	app := &application{
 		config:        cfg,
 		store:         store,
+		cacheStorage:  cacheStorage,
 		logger:        logger,
 		mailer:        mailer,
 		authenticator: jwtAuthenticator,

@@ -6,16 +6,16 @@ import (
 )
 
 func Get(key, fallback string) string {
-	v := os.Getenv(key)
-	if v == "" {
+	v, ok := os.LookupEnv(key)
+	if !ok {
 		return fallback
 	}
 	return v
 }
 
 func GetInt(key string, fallback int) int {
-	v := Get(key, "")
-	if v == "" {
+	v, ok := os.LookupEnv(key)
+	if !ok {
 		return fallback
 	}
 
@@ -24,4 +24,17 @@ func GetInt(key string, fallback int) int {
 		return fallback
 	}
 	return i
+}
+
+func GetBool(key string, fallback bool) bool {
+	v, ok := os.LookupEnv(key)
+	if !ok {
+		return fallback
+	}
+
+	b, err := strconv.ParseBool(v)
+	if err != nil {
+		return fallback
+	}
+	return b
 }

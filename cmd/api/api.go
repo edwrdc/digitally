@@ -9,12 +9,14 @@ import (
 	"github.com/edwrdc/digitally/internal/auth"
 	"github.com/edwrdc/digitally/internal/mailer"
 	"github.com/edwrdc/digitally/internal/store"
+	"github.com/edwrdc/digitally/internal/store/cache"
 	"go.uber.org/zap"
 )
 
 type application struct {
 	config        config
 	store         *store.Storage
+	cacheStorage  cache.Storage
 	logger        *zap.SugaredLogger
 	mailer        mailer.Client
 	authenticator auth.Authenticator
@@ -28,6 +30,7 @@ type config struct {
 	frontendURL string
 	mail        mailConfig
 	auth        authConfig
+	redisCfg    redisConfig
 }
 
 type dbConfig struct {
@@ -67,6 +70,13 @@ type tokenAuthConfig struct {
 type mailtrapConfig struct {
 	apiKey  string
 	inboxID string
+}
+
+type redisConfig struct {
+	addr    string
+	pw      string
+	db      int
+	enabled bool
 }
 
 func (app *application) run() error {
