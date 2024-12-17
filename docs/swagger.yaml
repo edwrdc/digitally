@@ -22,6 +22,36 @@ definitions:
     - name
     - price
     type: object
+  main.CreateUserTokenPayload:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 72
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  main.RegisterUserPayload:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 72
+        minLength: 3
+        type: string
+      username:
+        maxLength: 100
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
   main.UpdateProductPayload:
     properties:
       categories:
@@ -39,10 +69,26 @@ definitions:
       price:
         type: number
     type: object
-  main.WishlistRequest:
+  main.UserWithToken:
     properties:
-      user_id:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
         type: integer
+      is_active:
+        type: boolean
+      role:
+        $ref: '#/definitions/store.Role'
+      role_id:
+        type: integer
+      token:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
     type: object
   store.Product:
     properties:
@@ -97,6 +143,17 @@ definitions:
       user_id:
         type: integer
     type: object
+  store.Role:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      level:
+        type: integer
+      name:
+        type: string
+    type: object
   store.User:
     properties:
       created_at:
@@ -104,6 +161,12 @@ definitions:
       email:
         type: string
       id:
+        type: integer
+      is_active:
+        type: boolean
+      role:
+        $ref: '#/definitions/store.Role'
+      role_id:
         type: integer
       updated_at:
         type: string
@@ -171,6 +234,65 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Digitally API
 paths:
+  /authentication/token:
+    post:
+      consumes:
+      - application/json
+      description: Create a token for a user
+      parameters:
+      - description: User credientials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateUserTokenPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Token
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Creates a token
+      tags:
+      - authentication
+  /authentication/user:
+    post:
+      consumes:
+      - application/json
+      description: Registers a user with the given username, email, and password
+      parameters:
+      - description: User credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.RegisterUserPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered
+          schema:
+            $ref: '#/definitions/main.UserWithToken'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Registers a user
+      tags:
+      - authentication
   /healthz:
     get:
       description: Returns the current status of the API, environment, and version
@@ -349,6 +471,33 @@ paths:
       summary: Fetch the current user
       tags:
       - users
+  /users/activate/{token}:
+    put:
+      description: Activates/Register a user by invitaton token
+      parameters:
+      - description: Invitation token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: User activated
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Activates/Register a user
+      tags:
+      - users
   /users/feed:
     get:
       consumes:
@@ -419,12 +568,6 @@ paths:
         name: productID
         required: true
         type: integer
-      - description: User ID
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/main.WishlistRequest'
       produces:
       - application/json
       responses:
@@ -454,12 +597,6 @@ paths:
         name: productID
         required: true
         type: integer
-      - description: User ID
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/main.WishlistRequest'
       produces:
       - application/json
       responses:

@@ -3,8 +3,10 @@ package main
 import (
 	"time"
 
+	"github.com/edwrdc/digitally/internal/auth"
 	"github.com/edwrdc/digitally/internal/db"
 	"github.com/edwrdc/digitally/internal/env"
+	"github.com/edwrdc/digitally/internal/mailer"
 	"github.com/edwrdc/digitally/internal/store"
 	"go.uber.org/zap"
 )
@@ -31,14 +33,34 @@ const version = "0.0.1"
 func main() {
 
 	cfg := config{
-		addr:   env.Get("API_PORT", ":8080"),
-		env:    env.Get("API_ENV", "development"),
-		apiURL: env.Get("EXTERNAL_API_URL", "localhost:6969"),
+		addr:        env.Get("API_PORT", ":8080"),
+		env:         env.Get("API_ENV", "development"),
+		apiURL:      env.Get("EXTERNAL_API_URL", "localhost:6969"),
+		frontendURL: env.Get("FRONTEND_URL", "http://localhost:4000"),
 		db: dbConfig{
 			dsn:          env.Get("DB_DSN", "postgres://admin:adminpassword@localhost:5432/digitally?sslmode=disable"),
 			maxOpenConns: env.GetInt("DB_MAX_OPEN_CONNS", 25),
 			maxIdleConns: env.GetInt("DB_MAX_IDLE_CONNS", 25),
 			maxIdleTime:  time.Duration(env.GetInt("DB_MAX_IDLE_TIME", 15)) * time.Minute,
+		},
+		mail: mailConfig{
+			fromEmail: env.Get("MAIL_FROM_EMAIL", ""),
+			exp:       time.Duration(env.GetInt("MAIL_EXPIRY", 3)) * time.Hour,
+			mailtrap: mailtrapConfig{
+				apiKey:  env.Get("MAILTRAP_API_KEY", ""),
+				inboxID: env.Get("MAILTRAP_INBOX_ID", ""),
+			},
+		},
+		auth: authConfig{
+			basic: basicAuthConfig{
+				user: env.Get("BASIC_AUTH_USER", "admin"),
+				pass: env.Get("BASIC_AUTH_PASS", "adminpassword"),
+			},
+			token: tokenAuthConfig{
+				secret: env.Get("AUTH_JWT_SECRET", "digitallyio"),
+				expiry: time.Duration(env.GetInt("AUTH_JWT_EXPIRY", 3)) * time.Hour * 24,
+				iss:    "digitally",
+			},
 		},
 	}
 
@@ -57,10 +79,24 @@ func main() {
 
 	store := store.New(db)
 
+	mailer := mailer.NewMailtrapMailer(
+		cfg.mail.mailtrap.apiKey,
+		cfg.mail.fromEmail,
+		cfg.mail.mailtrap.inboxID,
+	)
+
+	jwtAuthenticator := auth.NewJWTAuthenticator(
+		cfg.auth.token.secret,
+		cfg.auth.token.iss,
+		cfg.auth.token.iss,
+	)
+
 	app := &application{
-		config: cfg,
-		store:  store,
-		logger: logger,
+		config:        cfg,
+		store:         store,
+		logger:        logger,
+		mailer:        mailer,
+		authenticator: jwtAuthenticator,
 	}
 
 	app.logger.Infow("Server Started", "env", app.config.env, "addr", app.config.addr)

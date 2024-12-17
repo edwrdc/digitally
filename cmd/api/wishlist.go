@@ -6,10 +6,6 @@ import (
 	"github.com/edwrdc/digitally/internal/store"
 )
 
-type WishlistRequest struct {
-	UserID int64 `json:"user_id"`
-}
-
 // AddToWishlist godoc
 //
 //	@Summary		Add product to wishlist
@@ -17,8 +13,7 @@ type WishlistRequest struct {
 //	@Tags			wishlist
 //	@Accept			json
 //	@Produce		json
-//	@Param			productID	path		int				true	"Product ID"
-//	@Param			request		body		WishlistRequest	true	"User ID"
+//	@Param			productID	path		int	true	"Product ID"
 //	@Success		204			{object}	nil
 //	@Failure		400			{object}	error
 //	@Failure		404			{object}	error	"Product not found"
@@ -29,17 +24,11 @@ type WishlistRequest struct {
 func (app *application) addProductToWishlistHandler(w http.ResponseWriter, r *http.Request) {
 
 	product := getProductFromContext(r)
-
-	// TODO: will do auth later
-	var payload WishlistRequest
-	if err := readJSON(w, r, &payload); err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
+	user := getUserFromContext(r)
 
 	ctx := r.Context()
 
-	if err := app.store.Wishlist.Add(ctx, payload.UserID, product.ID); err != nil {
+	if err := app.store.Wishlist.Add(ctx, user.ID, product.ID); err != nil {
 		switch {
 		case err == store.ErrConflict:
 			app.conflictResponse(w, r, err)
@@ -63,8 +52,7 @@ func (app *application) addProductToWishlistHandler(w http.ResponseWriter, r *ht
 //	@Tags			wishlist
 //	@Accept			json
 //	@Produce		json
-//	@Param			productID	path		int				true	"Product ID"
-//	@Param			request		body		WishlistRequest	true	"User ID"
+//	@Param			productID	path		int	true	"Product ID"
 //	@Success		204			{object}	nil
 //	@Failure		400			{object}	error
 //	@Failure		404			{object}	error	"Product not found"
@@ -75,16 +63,11 @@ func (app *application) removeProductFromWishlistHandler(w http.ResponseWriter, 
 
 	product := getProductFromContext(r)
 
-	// TODO: will do auth later
-	var payload WishlistRequest
-	if err := readJSON(w, r, &payload); err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
+	user := getUserFromContext(r)
 
 	ctx := r.Context()
 
-	if err := app.store.Wishlist.Remove(ctx, payload.UserID, product.ID); err != nil {
+	if err := app.store.Wishlist.Remove(ctx, user.ID, product.ID); err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}

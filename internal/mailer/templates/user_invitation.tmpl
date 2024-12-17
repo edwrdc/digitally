@@ -1,0 +1,23 @@
+{{define "subject"}}Finish Registering Your Account{{end}}
+
+{{define "body"}}
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Simple Transactional Email</title>
+</head>
+<body>
+    <p>Hi, {{.Username}},</p>
+    <p>You're almost done with your registration. Click the link below to finish.</p>
+    <p><a href="{{.ActivationURL}}">{{.ActivationURL}}</a></p>
+    <p>If you want to activate your account manually, you can use the following code: {{.ActivationCode}}</p>
+    <p>If you didn't request this, please ignore this email.</p>
+    <p>If you have any questions, please contact us at <a href="mailto:support@digitally.com">support@digitally.com</a>.</p>
+
+    <p>Thanks,</p>
+    <p>The Digitally Team</p>
+</body>
+</html>
+{{end}}

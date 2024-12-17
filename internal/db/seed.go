@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 
@@ -96,18 +97,22 @@ var productReviews = []string{
 	"Automation features save me hours every week. Absolutely essential tool.",
 }
 
-func Seed(store *store.Storage) error {
+func Seed(store *store.Storage, db *sql.DB) error {
 
 	ctx := context.Background()
 
 	users := generateUsers(100)
+	tx, _ := db.BeginTx(ctx, nil)
 
 	for _, user := range users {
-		if err := store.Users.Create(ctx, user); err != nil {
+		if err := store.Users.Create(ctx, tx, user); err != nil {
+			_ = tx.Rollback()
 			log.Printf("error creating user: %v", err)
 			return err
 		}
 	}
+
+	tx.Commit()
 
 	products := generateProducts(200, users)
 	for _, product := range products {
@@ -135,7 +140,9 @@ func generateUsers(n int) []*store.User {
 		users[i] = &store.User{
 			Username: usernames[i%len(usernames)] + fmt.Sprintf("%d", i),
 			Email:    usernames[i%len(usernames)] + fmt.Sprintf("%d@example.com", i),
-			Password: "123123",
+			Role: store.Role{
+				Name: "user",
+			},
 		}
 	}
 
