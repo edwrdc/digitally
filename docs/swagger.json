@@ -532,15 +532,6 @@
                         "name": "productID",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "User ID",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/main.WishlistRequest"
-                        }
                     }
                 ],
                 "responses": {
@@ -589,15 +580,6 @@
                         "name": "productID",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "User ID",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/main.WishlistRequest"
-                        }
                     }
                 ],
                 "responses": {
@@ -731,6 +713,12 @@
                 "is_active": {
                     "type": "boolean"
                 },
+                "role": {
+                    "$ref": "#/definitions/store.Role"
+                },
+                "role_id": {
+                    "type": "integer"
+                },
                 "token": {
                     "type": "string"
                 },
@@ -739,14 +727,6 @@
                 },
                 "username": {
                     "type": "string"
-                }
-            }
-        },
-        "main.WishlistRequest": {
-            "type": "object",
-            "properties": {
-                "user_id": {
-                    "type": "integer"
                 }
             }
         },
@@ -830,6 +810,23 @@
                 }
             }
         },
+        "store.Role": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "store.User": {
             "type": "object",
             "properties": {
@@ -844,6 +841,12 @@
                 },
                 "is_active": {
                     "type": "boolean"
+                },
+                "role": {
+                    "$ref": "#/definitions/store.Role"
+                },
+                "role_id": {
+                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "string"

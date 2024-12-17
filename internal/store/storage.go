@@ -40,6 +40,9 @@ type Storage struct {
 		Add(ctx context.Context, userID, productID int64) error
 		Remove(ctx context.Context, userID, productID int64) error
 	}
+	Roles interface {
+		GetByName(context.Context, string) (*Role, error)
+	}
 }
 
 func New(db *sql.DB) *Storage {
@@ -48,6 +51,7 @@ func New(db *sql.DB) *Storage {
 		Users:    &UserStore{db},
 		Reviews:  &ReviewStore{db},
 		Wishlist: &WishlistStore{db},
+		Roles:    &RoleStore{db},
 	}
 }
 

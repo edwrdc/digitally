@@ -13,8 +13,7 @@ import (
 //	@Tags			wishlist
 //	@Accept			json
 //	@Produce		json
-//	@Param			productID	path		int				true	"Product ID"
-//	@Param			request		body		WishlistRequest	true	"User ID"
+//	@Param			productID	path		int	true	"Product ID"
 //	@Success		204			{object}	nil
 //	@Failure		400			{object}	error
 //	@Failure		404			{object}	error	"Product not found"
@@ -53,8 +52,7 @@ func (app *application) addProductToWishlistHandler(w http.ResponseWriter, r *ht
 //	@Tags			wishlist
 //	@Accept			json
 //	@Produce		json
-//	@Param			productID	path		int				true	"Product ID"
-//	@Param			request		body		WishlistRequest	true	"User ID"
+//	@Param			productID	path		int	true	"Product ID"
 //	@Success		204			{object}	nil
 //	@Failure		400			{object}	error
 //	@Failure		404			{object}	error	"Product not found"

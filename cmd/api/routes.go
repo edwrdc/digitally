@@ -36,8 +36,8 @@ func (app *application) routes() http.Handler {
 				r.Use(app.productContextMiddleware)
 				r.Get("/", app.getProductHandler)
 
-				r.Delete("/", app.deleteProductHandler)
-				r.Patch("/", app.updateProductHandler)
+				r.Patch("/", app.checkProductOwnership("seller", app.updateProductHandler))
+				r.Delete("/", app.checkProductOwnership("admin", app.deleteProductHandler))
 			})
 		})
 
