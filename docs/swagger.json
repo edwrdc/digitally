@@ -458,7 +458,7 @@
                 }
             }
         },
-        "/users/{id}": {
+        "/users/{userID}": {
             "get": {
                 "security": [
                     {
@@ -480,7 +480,7 @@
                     {
                         "type": "integer",
                         "description": "User ID",
-                        "name": "id",
+                        "name": "userID",
                         "in": "path",
                         "required": true
                     }

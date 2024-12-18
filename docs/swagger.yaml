@@ -439,7 +439,7 @@ paths:
       summary: Update product
       tags:
       - products
-  /users/{id}:
+  /users/{userID}:
     get:
       consumes:
       - application/json
@@ -447,7 +447,7 @@ paths:
       parameters:
       - description: User ID
         in: path
-        name: id
+        name: userID
         required: true
         type: integer
       produces:
